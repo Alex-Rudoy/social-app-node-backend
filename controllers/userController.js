@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Post = require("../models/Post");
 
 exports.mustBeLoggedIn = async function (req, res, next) {
   if (req.session.user) {
@@ -59,5 +60,28 @@ exports.home = function (req, res) {
     res.render("home-dashboard");
   } else {
     res.render("home-guest", { errors: req.flash("errors"), regErrors: req.flash("regErrors") });
+  }
+};
+
+exports.ifUserExists = async function (req, res, next) {
+  try {
+    req.profileUser = await User.findByUsername(req.params.username);
+    next();
+  } catch (e) {
+    console.log(e);
+    res.render("404");
+  }
+};
+
+exports.profilePosts = async function (req, res) {
+  try {
+    const posts = await Post.findByAuthorId(req.profileUser._id);
+    res.render("profile", {
+      profileUsername: req.profileUser.username,
+      profileAvatar: req.profileUser.avatar,
+      posts: posts,
+    });
+  } catch (e) {
+    res.render("404");
   }
 };

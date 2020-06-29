@@ -1,7 +1,7 @@
 <%- include("includes/header")%>
 <div class="container py-md-5 container--narrow">
   <div class="d-flex justify-content-between">
-    <h2><%= postData.title %></h2>
+    <h2><%= post.title %></h2>
     <span class="pt-2">
       <a href="#" class="text-primary mr-2" data-toggle="tooltip" data-placement="top" title="Edit"
         ><i class="fas fa-edit"></i
@@ -15,14 +15,15 @@
   </div>
 
   <p class="text-muted small mb-4">
-    <a href="#"><img class="avatar-tiny" src="<%= postData.author.avatar %>" /></a>
-    Posted by <a href="#"><%= postData.author.username %></a> on <% if(postData.createdDate.getDate() < 10) {%>0<%}
-    %><%= postData.createdDate.getDate() %>.<% if(postData.createdDate.getMonth()+1 < 10) {%>0<%} %><%=
-    postData.createdDate.getMonth()+1 %>.<%= postData.createdDate.getFullYear() %>
+    <a href="/profile/<%=post.author.username%>"><img class="avatar-tiny" src="<%= post.author.avatar %>" /></a>
+    Posted by <a href="/profile/<%=post.author.username%>"> <%= post.author.username %></a>
+    on <% if(post.createdDate.getDate() < 10){%>0<%}%><%= post.createdDate.getDate() %>.<%
+    if(post.createdDate.getMonth()+1 < 10){%>0<%}%><%=post.createdDate.getMonth()+1 %>.<%=
+    post.createdDate.getFullYear() %>
   </p>
 
   <div class="body-content">
-    <%= postData.body %>
+    <%= post.body %>
   </div>
 </div>
 <%- include("includes/footer")%>

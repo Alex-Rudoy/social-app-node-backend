@@ -134,4 +134,26 @@ User.prototype.getAvatar = function () {
   this.avatar = `https://gravatar.com/avatar/${md5(this.data.email)}?s=128`;
 };
 
+User.findByUsername = async function (username) {
+  try {
+    if (typeof username != "string") {
+      throw Error("Invalid username");
+    }
+    let user = await usersCollection.findOne({ username: username });
+    if (user) {
+      user = new User(user, true);
+      user = {
+        _id: user.data._id,
+        username: user.data.username,
+        avatar: user.avatar,
+      };
+      return user;
+    } else {
+      throw Error("User not found");
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = User;

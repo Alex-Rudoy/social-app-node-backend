@@ -2,8 +2,8 @@ const Post = require("../models/Post");
 
 exports.viewSinglePost = async function (req, res) {
   try {
-    postData = await Post.findPostById(req.params.id);
-    res.render("single-post", { postData: postData });
+    post = await Post.findPostById(req.params.id);
+    res.render("single-post", { post: post });
   } catch (e) {
     console.log(e);
     res.render("404");

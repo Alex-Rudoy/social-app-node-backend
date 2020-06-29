@@ -13,20 +13,32 @@ Post.findPostById = async function (id) {
     if (typeof id != "string" || !ObjectID.isValid(id)) {
       throw Error("Invalid post id");
     }
-    let posts = await postsCollection
-      .aggregate([
-        { $match: { _id: new ObjectID(id) } },
-        { $lookup: { from: "users", localField: "author", foreignField: "_id", as: "authorData" } },
-        {
-          $project: {
-            title: 1,
-            body: 1,
-            createdDate: 1,
-            author: { $arrayElemAt: ["$authorData", 0] },
-          },
+    let posts = await Post.findPosts([{ $match: { _id: new ObjectID(id) } }]);
+    if (posts.length) {
+      console.log(posts[0]);
+      return posts[0];
+    } else {
+      throw Error("Can't find this post");
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+
+Post.findPosts = async function (operations) {
+  try {
+    let aggOperations = operations.concat([
+      { $lookup: { from: "users", localField: "author", foreignField: "_id", as: "authorData" } },
+      {
+        $project: {
+          title: 1,
+          body: 1,
+          createdDate: 1,
+          author: { $arrayElemAt: ["$authorData", 0] },
         },
-      ])
-      .toArray();
+      },
+    ]);
+    let posts = await postsCollection.aggregate(aggOperations).toArray();
     posts = posts.map((post) => {
       post.author = {
         username: post.author.username,
@@ -34,12 +46,7 @@ Post.findPostById = async function (id) {
       };
       return post;
     });
-    if (posts.length) {
-      console.log(posts[0]);
-      return posts[0];
-    } else {
-      throw Error("Can't find this post");
-    }
+    return posts;
   } catch (e) {
     throw e;
   }
@@ -84,6 +91,10 @@ Post.prototype.create = async function () {
   } catch (e) {
     throw e;
   }
+};
+
+Post.findByAuthorId = function (authorId) {
+  return Post.findPosts([{ $match: { author: authorId } }, { $sort: { createdDate: -1 } }]);
 };
 
 module.exports = Post;
