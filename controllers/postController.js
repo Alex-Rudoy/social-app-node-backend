@@ -69,3 +69,14 @@ exports.edit = async function (req, res) {
     }
   }
 };
+
+exports.delete = async function (req, res) {
+  try {
+    await Post.delete(req.params.id, req.visitorId);
+    await req.flash("success", "Post successfully deleted");
+    res.redirect(`/profile/${req.session.user.username}`);
+  } catch (e) {
+    await req.flash("errors", "You have no permission to delete this post");
+    res.redirect("/");
+  }
+};

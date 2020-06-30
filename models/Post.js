@@ -126,4 +126,18 @@ Post.prototype.update = async function () {
   }
 };
 
+Post.delete = async function (postId, visitorId) {
+  try {
+    let post = await Post.findPostById(postId, visitorId);
+    if (post.isVisitorOwner) {
+      await postsCollection.deleteOne({ _id: new ObjectID(postId) });
+      return true;
+    } else {
+      throw Error();
+    }
+  } catch (e) {
+    throw e;
+  }
+};
+
 module.exports = Post;
