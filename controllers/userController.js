@@ -16,6 +16,7 @@ exports.login = async function (req, res) {
   try {
     await user.login();
     req.session.user = { username: user.data.username, avatar: user.avatar, _id: user.data._id };
+    req.flash("success", "Successfully logged in");
     await req.session.save();
     res.redirect("/");
   } catch (e) {
@@ -26,8 +27,10 @@ exports.login = async function (req, res) {
 
 exports.logout = async function (req, res) {
   try {
-    await req.session.destroy();
+    req.flash("success", "Successfully logged out");
+    await req.session.save();
     res.redirect("/");
+    await req.session.destroy();
     return true;
   } catch (e) {
     throw e;
@@ -39,6 +42,7 @@ exports.register = async function (req, res) {
   try {
     await user.register();
     req.session.user = { username: user.data.username, avatar: user.avatar, _id: user.data._id };
+    req.flash("success", "Welcome to the website");
     await req.session.save();
     res.redirect("/");
   } catch (e) {
@@ -59,7 +63,7 @@ exports.home = function (req, res) {
   if (req.session.user) {
     res.render("home-dashboard");
   } else {
-    res.render("home-guest", { errors: req.flash("errors"), regErrors: req.flash("regErrors") });
+    res.render("home-guest", { regErrors: req.flash("regErrors") });
   }
 };
 
@@ -68,14 +72,13 @@ exports.ifUserExists = async function (req, res, next) {
     req.profileUser = await User.findByUsername(req.params.username);
     next();
   } catch (e) {
-    console.log(e);
     res.render("404");
   }
 };
 
 exports.profilePosts = async function (req, res) {
   try {
-    const posts = await Post.findByAuthorId(req.profileUser._id);
+    const posts = await Post.findPostsByAuthorId(req.profileUser._id);
     res.render("profile", {
       profileUsername: req.profileUser.username,
       profileAvatar: req.profileUser.avatar,
