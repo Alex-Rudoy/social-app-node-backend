@@ -1,6 +1,21 @@
 <%- include('includes/header') %>
 <div class="container py-md-5 container--narrow">
-  <%- include('includes/flash') %>
+  <%- include('includes/flash') %> <% if(posts.length){ %>
+  <h2 class="text-center mb-4">The latest from those you follow:</h2>
+  <div class="list-group">
+    <% posts.forEach((post) => { %>
+    <a href="/post/<%= post._id %>" class="list-group-item list-group-item-action">
+      <img class="avatar-tiny" src="<%= post.author.avatar%>" />
+      <strong><%= post.title%></strong>
+      <span class="text-muted small"
+        >by <%= post.author.username %>on <% if(post.createdDate.getDate() < 10){%>0<%}%><%=
+        post.createdDate.getDate()%>.<% if(post.createdDate.getMonth()+1 < 10){%>0<%}%><%=post.createdDate.getMonth()+1
+        %>.<%= post.createdDate.getFullYear() %></span
+      >
+    </a>
+    <% }) %>
+  </div>
+  <% } else { %>
   <div class="text-center">
     <h2>Hello <strong><%= user.username %></strong>, your feed is empty.</h2>
     <p class="lead text-muted">
@@ -9,5 +24,6 @@
       people with similar interests and then follow them.
     </p>
   </div>
+  <% } %>
 </div>
 <%- include("includes/footer")%>

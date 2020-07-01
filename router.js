@@ -11,7 +11,24 @@ router.post("/login", userController.login);
 router.post("/logout", userController.logout);
 
 // profile related routes
-router.get("/profile/:username", userController.ifUserExists, userController.profilePosts);
+router.get(
+  "/profile/:username",
+  userController.ifUserExists,
+  userController.sharedProfileData,
+  userController.profilePosts
+);
+router.get(
+  "/profile/:username/followers",
+  userController.ifUserExists,
+  userController.sharedProfileData,
+  userController.profileFollowers
+);
+router.get(
+  "/profile/:username/following",
+  userController.ifUserExists,
+  userController.sharedProfileData,
+  userController.profileFollowing
+);
 
 // post related routes
 router.get("/post/:id", postController.viewSinglePost);
@@ -24,5 +41,6 @@ router.post("/search", postController.search);
 
 // follow related routes
 router.post("/follow/:username", userController.mustBeLoggedIn, followController.addFollow);
+router.post("/unfollow/:username", userController.mustBeLoggedIn, followController.removeFollow);
 
 module.exports = router;

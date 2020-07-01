@@ -1,4 +1,5 @@
 const postsCollection = require("../db").db().collection("posts");
+const followsCollection = require("../db").db().collection("follows");
 const ObjectID = require("mongodb").ObjectID;
 const User = require("./User");
 const sanitizeHTML = require("sanitize-html");
@@ -33,7 +34,14 @@ Post.findPostsByAuthorId = function (authorId) {
 Post.reusablePostsQuery = async function (operations, visitorId) {
   try {
     let aggOperations = operations.concat([
-      { $lookup: { from: "users", localField: "author", foreignField: "_id", as: "authorData" } },
+      {
+        $lookup: {
+          from: "users",
+          localField: "author",
+          foreignField: "_id",
+          as: "authorData",
+        },
+      },
       {
         $project: {
           title: 1,
@@ -68,8 +76,14 @@ Post.prototype.cleanup = function () {
     this.data.body = "";
   }
   this.data = {
-    title: sanitizeHTML(this.data.title.trim(), { allowedTags: [], allowedAttributes: {} }),
-    body: sanitizeHTML(this.data.body.trim(), { allowedTags: [], allowedAttributes: {} }),
+    title: sanitizeHTML(this.data.title.trim(), {
+      allowedTags: [],
+      allowedAttributes: {},
+    }),
+    body: sanitizeHTML(this.data.body.trim(), {
+      allowedTags: [],
+      allowedAttributes: {},
+    }),
     createdDate: new Date(),
     author: ObjectID(this.userid),
   };
@@ -151,6 +165,32 @@ Post.search = async function (searchTerm) {
     } else {
       throw Error("Invalid search");
     }
+  } catch (error) {
+    throw error;
+  }
+};
+
+Post.countPostsByAuthor = async function (id) {
+  try {
+    let postCount = await postsCollection.countDocuments({ author: id });
+    return postCount;
+  } catch (error) {
+    throw error;
+  }
+};
+
+Post.getFeed = async function (id) {
+  try {
+    let followedUsers = await followsCollection.find({ authorId: new ObjectID(id) }).toArray();
+    followedUsers = followedUsers.map((follow) => {
+      return follow.followedId;
+    });
+    console.log(followedUsers);
+    let posts = Post.reusablePostsQuery([
+      { $match: { author: { $in: followedUsers } } },
+      { $sort: { createdDate: -1 } },
+    ]);
+    return posts;
   } catch (error) {
     throw error;
   }
