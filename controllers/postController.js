@@ -80,3 +80,12 @@ exports.delete = async function (req, res) {
     res.redirect("/");
   }
 };
+
+exports.search = async function (req, res) {
+  try {
+    const posts = await Post.search(req.body.searchTerm);
+    res.json(posts);
+  } catch (error) {
+    res.json([]);
+  }
+};

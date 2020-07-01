@@ -47,6 +47,7 @@ Post.reusablePostsQuery = async function (operations, visitorId) {
     let posts = await postsCollection.aggregate(aggOperations).toArray();
     posts = posts.map((post) => {
       post.isVisitorOwner = post.authorId.equals(visitorId);
+      post.authorId = undefined;
       post.author = {
         username: post.author.username,
         avatar: new User(post.author, true).avatar,
@@ -107,7 +108,6 @@ Post.prototype.update = async function () {
       this.cleanup();
       this.validate();
       if (!this.errors.length) {
-        // todo update post
         await postsCollection.findOneAndUpdate(
           { _id: new ObjectID(this.requestedPostId) },
           { $set: { title: this.data.title, body: this.data.body } }
@@ -137,6 +137,22 @@ Post.delete = async function (postId, visitorId) {
     }
   } catch (e) {
     throw e;
+  }
+};
+
+Post.search = async function (searchTerm) {
+  try {
+    if (typeof searchTerm == "string") {
+      let posts = await Post.reusablePostsQuery([
+        { $match: { $text: { $search: searchTerm } } },
+        { $sort: { score: { $meta: "textScore" } } },
+      ]);
+      return posts;
+    } else {
+      throw Error("Invalid search");
+    }
+  } catch (error) {
+    throw error;
   }
 };
 
