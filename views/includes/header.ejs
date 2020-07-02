@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>OurApp</title>
+    <title><%= typeof(pageTitle) == "undefined" ? "Social app" : `Social app | ${pageTitle}`%></title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
@@ -23,7 +23,7 @@
   <body>
     <header class="header-bar mb-3">
       <div class="container d-flex flex-column flex-md-row align-items-center p-3">
-        <h4 class="my-0 mr-md-auto font-weight-normal"><a href="/" class="text-white">OurApp</a></h4>
+        <h4 class="my-0 mr-md-auto font-weight-normal"><a href="/" class="text-white">Social app</a></h4>
         <% if (user) { %>
         <div class="flex-row my-3 my-md-0">
           <a

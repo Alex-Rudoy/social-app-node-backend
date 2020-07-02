@@ -3,14 +3,14 @@ const Post = require("../models/Post");
 exports.viewSinglePost = async function (req, res) {
   try {
     let post = await Post.findPostById(req.params.id, req.visitorId);
-    res.render("single-post", { post: post });
+    res.render("single-post", { post: post, pageTitle: post.title });
   } catch (e) {
-    res.render("404");
+    res.render("404", { pageTitle: "Page not found" });
   }
 };
 
 exports.viewCreateScreen = function (req, res) {
-  res.render("create-post");
+  res.render("create-post", { pageTitle: "Create post" });
 };
 
 exports.create = async function (req, res) {
@@ -36,12 +36,12 @@ exports.viewEditScreen = async function (req, res) {
   try {
     let post = await Post.findPostById(req.params.id, req.visitorId);
     if (post.isVisitorOwner) {
-      res.render("edit-post", { post: post });
+      res.render("edit-post", { post: post, pageTitle: "Edit post" });
     } else {
       throw Error();
     }
   } catch (e) {
-    res.render("404");
+    res.render("404", { pageTitle: "Page not found" });
   }
 };
 

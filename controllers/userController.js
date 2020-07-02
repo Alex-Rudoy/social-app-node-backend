@@ -96,10 +96,9 @@ exports.home = async function (req, res) {
   try {
     if (req.session.user) {
       let posts = await Post.getFeed(req.session.user._id);
-      console.log(posts);
-      res.render("home-dashboard", { posts: posts });
+      res.render("home-dashboard", { posts: posts, pageTitle: "Homepage" });
     } else {
-      res.render("home-guest", { regErrors: req.flash("regErrors") });
+      res.render("home-guest", { regErrors: req.flash("regErrors"), pageTitle: "Welcome!" });
     }
   } catch (error) {
     res.send(error);
@@ -111,7 +110,7 @@ exports.ifUserExists = async function (req, res, next) {
     req.profileUser = await User.findByUsername(req.params.username);
     next();
   } catch (e) {
-    res.render("404");
+    res.render("404", { pageTitle: "Page not found" });
   }
 };
 
@@ -130,9 +129,10 @@ exports.profilePosts = async function (req, res) {
         followersCount: req.followersCount,
         followingCount: req.followingCount,
       },
+      pageTitle: `${req.profileUser.username} profile`,
     });
   } catch (e) {
-    res.render("404");
+    res.render("404", { pageTitle: "Page not found" });
   }
 };
 
@@ -151,9 +151,10 @@ exports.profileFollowers = async function (req, res) {
         followersCount: req.followersCount,
         followingCount: req.followingCount,
       },
+      pageTitle: `${req.profileUser.username} profile`,
     });
   } catch (e) {
-    res.render("404");
+    res.render("404", { pageTitle: "Page not found" });
     console.log(e);
   }
 };
@@ -173,9 +174,10 @@ exports.profileFollowing = async function (req, res) {
         followersCount: req.followersCount,
         followingCount: req.followingCount,
       },
+      pageTitle: `${req.profileUser.username} profile`,
     });
   } catch (e) {
-    res.render("404");
+    res.render("404", { pageTitle: "Page not found" });
     console.log(e);
   }
 };

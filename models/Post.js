@@ -185,7 +185,6 @@ Post.getFeed = async function (id) {
     followedUsers = followedUsers.map((follow) => {
       return follow.followedId;
     });
-    console.log(followedUsers);
     let posts = Post.reusablePostsQuery([
       { $match: { author: { $in: followedUsers } } },
       { $sort: { createdDate: -1 } },
