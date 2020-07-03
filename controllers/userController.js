@@ -54,6 +54,16 @@ exports.login = async function (req, res) {
   }
 };
 
+exports.apiLogin = async function (req, res) {
+  let user = new User(req.body);
+  try {
+    await user.login();
+    res.json("Good job!");
+  } catch (e) {
+    res.json("incorrect values");
+  }
+};
+
 exports.logout = async function (req, res) {
   try {
     req.flash("success", "Successfully logged out");
@@ -90,6 +100,20 @@ exports.register = async function (req, res) {
     await req.session.save();
     res.redirect("/");
   }
+};
+
+exports.doesUsernameExist = async function (req, res) {
+  try {
+    await User.findByUsername(req.body.username);
+    res.json(true);
+  } catch (error) {
+    res.json(false);
+  }
+};
+
+exports.doesEmailExist = async function (req, res) {
+  bool = await User.doesEmailExist(req.body.email);
+  res.json(bool);
 };
 
 exports.home = async function (req, res) {

@@ -4,8 +4,12 @@ const MongoStore = require("connect-mongo")(session);
 const flash = require("connect-flash");
 const markdown = require("marked");
 const sanitizeHTML = require("sanitize-html");
-
+const csrf = require("csurf");
 const app = express();
+
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use("/api", require("./router-api"));
 
 let sessionOptions = session({
   secret: "JavaScript is soooo cool",
@@ -47,12 +51,15 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
 app.use(express.static("public"));
 
 app.set("views", "views");
 app.set("view engine", "ejs");
+app.use(csrf());
+app.use(function (req, res, next) {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 app.use("/", router);
 
 const server = require("http").createServer(app);

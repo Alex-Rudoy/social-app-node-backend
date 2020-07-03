@@ -156,4 +156,15 @@ User.findByUsername = async function (username) {
   }
 };
 
+User.doesEmailExist = async function (email) {
+  if (typeof email != "string") {
+    return false;
+  }
+  let user = await usersCollection.findOne({ email: email });
+  if (user) {
+    return true;
+  }
+  return false;
+};
+
 module.exports = User;
