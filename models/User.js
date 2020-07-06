@@ -86,8 +86,8 @@ User.prototype.validate = async function () {
     }
 
     return true;
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -102,8 +102,8 @@ User.prototype.login = async function () {
     } else {
       throw Error("invalid username/password");
     }
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -121,12 +121,12 @@ User.prototype.register = async function () {
       this.getAvatar();
       return true;
     } else {
-      let e = new Error();
-      e.regErrors = this.errors;
-      throw e;
+      let error = new Error();
+      error.regErrors = this.errors;
+      throw error;
     }
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -151,8 +151,8 @@ User.findByUsername = async function (username) {
     } else {
       throw Error("User not found");
     }
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 

@@ -1,10 +1,12 @@
 const Post = require("../models/Post");
+const sendgrid = require("@sendgrid/mail");
+sendgrid.setApiKey(process.env.SENDGRIDAPIKEY);
 
 exports.viewSinglePost = async function (req, res) {
   try {
     let post = await Post.findPostById(req.params.id, req.visitorId);
     res.render("single-post", { post: post, pageTitle: post.title });
-  } catch (e) {
+  } catch (error) {
     res.render("404", { pageTitle: "Page not found" });
   }
 };
@@ -17,17 +19,39 @@ exports.create = async function (req, res) {
   let post = new Post(req.body, req.session.user._id);
   try {
     postId = await post.create();
-    await req.flash("success", "New post created");
+    await sendgrid.send({
+      to: "rudoy4ik@gmail.com",
+      from: "rudoy4ik@gmail.com",
+      subject: "New post created",
+      text: "Yeeey some1 created a post",
+      html: "Yeeey some1 created a <strong>new post</strong>",
+    });
+    req.flash("success", "New post created");
+    await req.session.save();
     res.redirect(`/post/${postId}`);
-  } catch (e) {
-    if (e.errors) {
-      e.errors.forEach((error) => {
+  } catch (error) {
+    if (error.errors) {
+      error.errors.forEach((error) => {
         req.flash("errors", error);
       });
       await req.session.save();
       res.redirect("/create-post");
     } else {
-      res.send("Some error occured, please, try later - " + e.message);
+      res.send("Some error occured, please, try later - " + error.message);
+    }
+  }
+};
+
+exports.apiCreatePost = async function (req, res) {
+  let post = new Post(req.body, req.apiUser._id);
+  try {
+    postId = await post.create();
+    res.json("congratz");
+  } catch (error) {
+    if (error.errors) {
+      res.json(error.errors);
+    } else {
+      res.json(error);
     }
   }
 };
@@ -40,7 +64,7 @@ exports.viewEditScreen = async function (req, res) {
     } else {
       throw Error();
     }
-  } catch (e) {
+  } catch (error) {
     res.render("404", { pageTitle: "Page not found" });
   }
 };
@@ -49,12 +73,13 @@ exports.edit = async function (req, res) {
   let post = new Post(req.body, req.visitorId, req.params.id);
   try {
     await post.update();
-    await req.flash("success", "Post successfully updated");
+    req.flash("success", "Post successfully updated");
+    await req.session.save();
     res.redirect(`/post/${req.params.id}`);
-  } catch (e) {
-    if (e.errors) {
+  } catch (error) {
+    if (error.errors) {
       // if some validation errors occured
-      e.errors.forEach((error) => {
+      error.errors.forEach((error) => {
         req.flash("errors", error);
       });
       await req.session.save();
@@ -63,7 +88,7 @@ exports.edit = async function (req, res) {
       // if post id doesnt exist
       // if visitor != owner
       req.flash("errors", "You do not have permission to perform this action");
-      console.log(e);
+      console.log(error);
       await req.session.save();
       res.redirect("/");
     }
@@ -73,11 +98,22 @@ exports.edit = async function (req, res) {
 exports.delete = async function (req, res) {
   try {
     await Post.delete(req.params.id, req.visitorId);
-    await req.flash("success", "Post successfully deleted");
+    req.flash("success", "Post successfully deleted");
+    await req.session.save();
     res.redirect(`/profile/${req.session.user.username}`);
-  } catch (e) {
-    await req.flash("errors", "You have no permission to delete this post");
+  } catch (error) {
+    req.flash("errors", "You have no permission to delete this post");
+    await req.session.save();
     res.redirect("/");
+  }
+};
+
+exports.apiDeletePost = async function (req, res) {
+  try {
+    await Post.delete(req.params.id, req.apiUser._id);
+    res.json("Success");
+  } catch (error) {
+    res.json("You have no permission to perform this action");
   }
 };
 

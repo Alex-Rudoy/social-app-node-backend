@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Post = require("../models/Post");
 const Follow = require("../models/Follow");
+const jwt = require("jsonwebtoken");
 
 exports.mustBeLoggedIn = async function (req, res, next) {
   if (req.session.user) {
@@ -9,6 +10,15 @@ exports.mustBeLoggedIn = async function (req, res, next) {
     req.flash("errors", "You must be logged in to perform this action");
     await req.session.save();
     res.redirect("/");
+  }
+};
+
+exports.apiMustBeLoggedIn = async function (req, res, next) {
+  try {
+    req.apiUser = await jwt.verify(req.body.token, process.env.JWTSECRET);
+    next();
+  } catch (error) {
+    res.json("You have no permission to perform this action");
   }
 };
 
@@ -48,8 +58,9 @@ exports.login = async function (req, res) {
     req.flash("success", "Successfully logged in");
     await req.session.save();
     res.redirect("/");
-  } catch (e) {
-    await req.flash("errors", e.message);
+  } catch (error) {
+    req.flash("errors", error.message);
+    await req.session.save();
     res.redirect("/");
   }
 };
@@ -58,8 +69,8 @@ exports.apiLogin = async function (req, res) {
   let user = new User(req.body);
   try {
     await user.login();
-    res.json("Good job!");
-  } catch (e) {
+    res.json(jwt.sign({ _id: user.data._id }, process.env.JWTSECRET, { expiresIn: "24h" }));
+  } catch (error) {
     res.json("incorrect values");
   }
 };
@@ -71,8 +82,8 @@ exports.logout = async function (req, res) {
     res.redirect("/");
     await req.session.destroy();
     return true;
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -88,13 +99,13 @@ exports.register = async function (req, res) {
     req.flash("success", "Welcome to the website");
     await req.session.save();
     res.redirect("/");
-  } catch (e) {
-    if (e.regErrors) {
-      e.regErrors.forEach((error) => {
+  } catch (error) {
+    if (error.regErrors) {
+      error.regErrors.forEach((error) => {
         req.flash("regErrors", error);
       });
     } else {
-      res.send("Some error occured, please, try later - " + e.message);
+      res.send("Some error occured, please, try later - " + error.message);
     }
 
     await req.session.save();
@@ -122,6 +133,7 @@ exports.home = async function (req, res) {
       let posts = await Post.getFeed(req.session.user._id);
       res.render("home-dashboard", { posts: posts, pageTitle: "Homepage" });
     } else {
+      console.log("req.session.user doesnt exist");
       res.render("home-guest", { regErrors: req.flash("regErrors"), pageTitle: "Welcome!" });
     }
   } catch (error) {
@@ -133,7 +145,7 @@ exports.ifUserExists = async function (req, res, next) {
   try {
     req.profileUser = await User.findByUsername(req.params.username);
     next();
-  } catch (e) {
+  } catch (error) {
     res.render("404", { pageTitle: "Page not found" });
   }
 };
@@ -155,7 +167,7 @@ exports.profilePosts = async function (req, res) {
       },
       pageTitle: `${req.profileUser.username} profile`,
     });
-  } catch (e) {
+  } catch (error) {
     res.render("404", { pageTitle: "Page not found" });
   }
 };
@@ -177,9 +189,9 @@ exports.profileFollowers = async function (req, res) {
       },
       pageTitle: `${req.profileUser.username} profile`,
     });
-  } catch (e) {
+  } catch (error) {
     res.render("404", { pageTitle: "Page not found" });
-    console.log(e);
+    console.log(error);
   }
 };
 
@@ -200,8 +212,18 @@ exports.profileFollowing = async function (req, res) {
       },
       pageTitle: `${req.profileUser.username} profile`,
     });
-  } catch (e) {
+  } catch (error) {
     res.render("404", { pageTitle: "Page not found" });
-    console.log(e);
+    console.log(error);
+  }
+};
+
+exports.apiGetPostsByUsername = async function (req, res) {
+  try {
+    let authorDoc = await User.findByUsername(req.params.username);
+    let posts = await Post.findPostsByAuthorId(authorDoc._id);
+    res.json(posts);
+  } catch (error) {
+    res.json(error);
   }
 };

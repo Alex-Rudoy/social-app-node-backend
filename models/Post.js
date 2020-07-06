@@ -22,8 +22,8 @@ Post.findPostById = async function (id, visitorId) {
     } else {
       throw Error("Can't find this post");
     }
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -63,8 +63,8 @@ Post.reusablePostsQuery = async function (operations, visitorId) {
       return post;
     });
     return posts;
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -108,10 +108,10 @@ Post.prototype.create = async function () {
     } else {
       let e = new Error();
       e.errors = this.errors;
-      throw e;
+      throw error;
     }
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -128,15 +128,15 @@ Post.prototype.update = async function () {
         );
         return true;
       } else {
-        let e = new Error();
-        e.errors = this.errors;
-        throw e;
+        let error = new Error();
+        error.errors = this.errors;
+        throw error;
       }
     } else {
       throw Error;
     }
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 
@@ -149,8 +149,8 @@ Post.delete = async function (postId, visitorId) {
     } else {
       throw Error();
     }
-  } catch (e) {
-    throw e;
+  } catch (error) {
+    throw error;
   }
 };
 

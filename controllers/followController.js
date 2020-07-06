@@ -5,7 +5,8 @@ exports.addFollow = async function (req, res) {
   let follow = new Follow(req.params.username, req.visitorId);
   try {
     await follow.create();
-    await req.flash("success", `Successfully followed ${req.params.username}`);
+    req.flash("success", `Successfully followed ${req.params.username}`);
+    await req.session.save();
     res.redirect(`/profile/${req.params.username}`);
   } catch (error) {
     error.errors.forEach((error) => {
@@ -20,7 +21,8 @@ exports.removeFollow = async function (req, res) {
   let follow = new Follow(req.params.username, req.visitorId);
   try {
     await follow.delete();
-    await req.flash("success", `Successfully unfollowed ${req.params.username}`);
+    req.flash("success", `Successfully unfollowed ${req.params.username}`);
+    await req.session.save();
     res.redirect(`/profile/${req.params.username}`);
   } catch (error) {
     error.errors.forEach((error) => {
